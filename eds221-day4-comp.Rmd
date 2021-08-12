@@ -7,6 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(palmerpenguins)
 ```
 
 ```{r}
@@ -71,6 +73,141 @@ animal_age <- function(animal, age) {
 }
 
 animal_age(animal = "dog", age = 1)
+
+```
+```{r}
+adelie_gentoo <- penguins %>% 
+  filter(species %in% c("Adelie", "Gentoo"))
+```
+
+```{r}
+adelie_gentoo_WRONG <- penguins %>% 
+  filter(species == c("Adelie", "Gentoo"))
+
+```
+
+### Combine function & for loops
+
+```{r}
+df_means <- function(df) {
+  for (i in 1:ncol(df)) {
+    col_mean <- mean(df[[i]])
+    print(paste( "The mean of", colnames(df[i]), "is", col_mean))
+  }
+}
+```
+
+# Make subset of only structural size variables from the penguins dataset for Chinstrap
+
+```{r}
+chinstrap_sizes <- penguins %>% 
+  filter(species == "Chinstrap") %>% 
+  select(bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g)
+
+df_means(df = chinstrap_sizes)
+df_means(df = penguins)
+
+```
+## Condition to check the class of a input
+```{r}
+lunchtime <- function(tacos, price_per) {
+  
+  if (is.numeric(tacos) == FALSE) {
+    stop("Not a number, please fix!")
+  }
+  
+  tot_price <- tacos * price_per
+  return(tot_price)
+}
+
+lunchtime(tacos = 4, price_per = 2.50)
+
+```
+## Example: use value from a data frame to calcuate something based on user input
+```{r}
+# Calculate the groundwater transport rate
+
+gw_rate <- function(site) {
+  
+  gw_slope_depth <- data.frame(sitename = c("mountain", "prarie", "desert", "beach"),
+                               depth = c(32, 41, 63, 2),
+                               slope = c(11.2, 0.4, 0.8, 2.6))
+  
+  site_select <- dplyr::filter(gw_slope_depth, sitename == site)
+  
+  transport_rate <- 1.4 * site_select$slope + 3.6 * site_select$depth
+  
+  return(transport_rate)
+}
+
+gw_rate(site = "beach")
+
+```
+### Now using switch()
+```{r}
+gw_rate_switch <- function(site) {
+  
+  gw_slope_depth <- switch(site, 
+                           "mountain" = c(32),
+                           "prairie" = c(41, 0.4),
+                           "desert" = c(63, 0.8),
+                           "beach" = c(2,2.6))
+  
+  transport_rate <- 1.4 * gw_slope_depth[2] + 3.6 * gw_slope_depth[1]
+  
+  return(transport_rate)
+}
+
+gw_rate_switch(site = "beach")
+
+```
+### Logistic growth
+
+```{r}
+
+logistic_growth <- function(K, N0, r, time) {
+  Nt <- K / (1 + ((K - N0)/ N0) * exp(-r * time))
+  print(Nt)
+} 
+
+logistic_growth(K = 5000, N0 = 200, r = 0.43, time = 6)
+
+time_vec <- seq(from = 0, to = 35, by = 0.1)
+bacterial_growth <- logistic_growth(K = 5000, N0 = 200, r = 0.43, time = time_vec)
+
+bacterial_df <- data.frame(time_vec, bacterial_growth)
+
+ggplot(data = bacterial_df, aes(x= time_vec, y= bacterial_growth)) + geom_point()
+```
+
+```{r}
+r_seq <- seq(from = 0.20, to = 0.40 , by = 0.01)
+time_vec <- seq(from = 0, to = 35, by = 0.1)
+
+out_matrix <- matrix(data = NA, nrow = length(time_vec), ncol = length(r_seq))
+
+# NO = 100, K = 6000
+for (i in seq_along(r_seq)) {
+  for (j in seq_along(time_vec)) {
+    pop <- logistic_growth(K = 6000, N0 = 100, r = r_seq[i], time = time_vec[j])
+    out_matrix[j, i] <- pop
+  }
+}
+
+# Wrangling
+out_df <- data.frame(time = time_vec, out_matrix)
+
+# Update Column Names
+colnames(out_df) <-c("time", paste0("gr_", r_seq))
+
+# make a long form (tidy version) of this data
+out_df_long <- out_df %>% 
+  pivot_longer(-time, names_to = "growth_rate", values_to = "population")
+
+# Make in ggplot a LINE GRAPH (geom_line()) for population (y-axis) over time
+# time(x -axis) with color depending on the growth rate
+
+ggplot(data=out_df_long, aes(x = time, y = population)) + geom_line(aes(color = growth_rate))
 
 ```
 
