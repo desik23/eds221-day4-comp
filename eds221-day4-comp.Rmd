@@ -1,0 +1,76 @@
+---
+title: "eds221-day4-comp"
+author: "Desik Somasundaram"
+date: "8/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+quarter_split <- c(1.0, 1.1, 1.2, 1.1, 1.4, 1.5, 1.6, 1.4)
+consec_totals <- vector(mode = "numeric", length = length(quarter_split)-1)
+
+for (i in 1:length(quarter_split)-1) {
+  consec_total <- quarter_split[i] + quarter_split[i+1]
+  consec_totals[i] <- consec_total
+}
+
+```
+
+## Basic function structure practice
+
+```{r}
+birddog_sum <- function(bird, dog) {
+  
+  if (bird > 50) {
+    stop("Birds can't be great than 50!")
+  }
+  
+  if (bird < 10) {
+    message("Awesome, the less the better!")
+  }
+  
+  if (dog < 10 ) {
+    warning ("Hey that doesn't seem right")
+  }
+  add_birddog <- bird + dog
+  return(add_birddog)
+}
+
+bird100_dog5 <- birddog_sum(bird = 2, dog = 5)
+bird100_dog5
+
+
+```
+
+```{r}
+say_hello <- function(friend, weekday)
+  print(paste("Hello,", friend, "have a great", weekday))
+```
+
+### Functions with conditions
+
+```{r}
+animal_age <- function(animal, age) {
+  
+  if(!animal %in% c("dog", "goat")) {
+    stop("Animal must be a dog or goat")
+  }
+  
+  if (animal == "dog"){
+    creature_age <- age * 7
+  }
+  
+  if (animal == "goat") {
+    creature_age <- age * 4.7
+  }
+  return(creature_age)
+}
+
+animal_age(animal = "dog", age = 1)
+
+```
+
